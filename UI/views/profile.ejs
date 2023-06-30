@@ -1,0 +1,140 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>maybe</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/Features-Boxed.css">
+    <link rel="stylesheet" href="/assets/css/Login-Form-Dark.css">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <!-- <script src="https://www.gstatic.com/firebasejs/9.6.9/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.9/firebase-auth.js" defer></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js" defer></script>
+</head>
+
+<body>
+    <section class="login-dark">
+        <div id="userid"><%= userid %></div>
+        <div id="isexpired"><%= expired %></div>
+        <%- include("navbar.ejs",{email: email}) %>
+        <div class="days_left" style="text-align: center;">
+            <h1><%= daysleft %></h1>
+            <h1 style="font-size: 25px;">Days left</h1>
+        </div>
+        <div class="centered" style="padding-bottom: 40px;">
+            
+            <div class="row" style="text-align: center;padding-top: 15px;">
+                <h1><%= displayName %></h1>
+            </div>
+            
+            <div>
+                <small style="padding: 10px;width: 12px;font-size: medium;">First Name</small>
+            </div>
+            <div style="padding: 10px;">
+                <input class="form-control" type="text" style="color: white;font-size: 21px;text-align: left;background: rgb(46,65,102);border-radius: 7px;border-width: 0px;box-shadow: inset -2px -2px rgba(8,20,50,0.83);filter: contrast(101%);width: 313px;transform: perspective(0px);" required="" id="input1">
+            </div>
+            <div>
+                <small style="padding: 10px;width: 12px;font-size: medium;">Last Name</small>
+            </div>
+            <div style="padding: 10px;">
+                <input class="form-control" type="text" style="color: white;font-size: 21px;text-align: left;background: rgb(46,65,102);border-radius: 7px;border-width: 0px;box-shadow: inset -2px -2px rgba(8,20,50,0.83);filter: contrast(101%);width: 313px;transform: perspective(0px);" required="" id="input2">
+            </div>
+
+            <div class="row" style="padding-bottom: 20px;">
+                <div class="col">
+                    <small style="padding: 10px;width: 12px;font-size: 17px;">Extend by (days):</small>
+                </div>
+                <div class="col" style="text-align: center;">
+                    <input type="number" min="0" oninput="validity.valid||(value='');" style="color:white;font-size: 20px;text-align: left;background: rgb(75, 102, 155);border-radius: 7px;border-width: 0px;box-shadow: inset -2px -2px rgba(8,20,50,0.83);filter: contrast(101%);width: 130px;transform: perspective(0px);" required="" id="extendby"></input>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-primary d-block w-100" id="extendBtn">Extend</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-primary d-block w-100" style="background-color: rgba(83, 131, 179, 0.475);" id="cancelBtn" onclick="history.back()">Cancel</button>
+                </div>
+            </div>
+            <!-- <button class="btn btn-primary" style="outline: noene;margin-top: 0px;background: none;padding: 20px;" type="button" onclick="history.back()"><i class="fa fa-arrow-left"></i> Back</button> -->
+        </div>        
+    </section>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+<!-- Script for google authentication and cookies -->
+<script type="module">
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/9.6.9/firebase-app.js";
+    import { getFirestore, updateDoc, getDoc, doc, Timestamp, setDoc } from "https://www.gstatic.com/firebasejs/9.6.9/firebase-firestore.js";
+
+    window.addEventListener("DOMContentLoaded", async () => {
+        const firebaseConfig = {
+        apiKey: "",
+        authDomain: "",
+        projectId: "",
+        storageBucket: "",
+        messagingSenderId: "",
+        appId: ""
+        }; 
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        const workaroundone = document.getElementById('userid');
+        const workaroundtwo = document.getElementById('isexpired');
+
+        const isexpired = (workaroundtwo.textContent.trim() === 'true');
+        const userid = workaroundone.textContent.trim();
+        
+        const usersRef = doc(db, 'users', userid);
+        const docSnap = await getDoc(usersRef);
+
+        //When button is pressed Sign in with Pop Up and...
+        document
+        .getElementById("extendBtn")
+        .addEventListener("click", async (e) => {
+            var firstName = document.getElementById('input1').value;
+            var lastName = document.getElementById('input2').value;
+            var extendby = document.getElementById('extendby').value;
+            extendby = extendby*24*60*60*1000; // extend plan by this amount of milliseconds
+            var newexpirationdate;
+
+            
+            if (extendby  && firstName  && lastName ) {
+                
+                if (isexpired) {
+                    const currentDate = new Date();
+                    const currentTimestamp = currentDate.getTime();
+                    newexpirationdate = currentTimestamp + extendby; 
+                } else {
+                    const data = docSnap.data();
+                    const expirationDate = data.expirationDate;
+                    newexpirationdate = expirationDate + extendby;
+                }
+                
+                await updateDoc(usersRef , {
+                        firstName: firstName,
+                        lastName: lastName,
+                        expirationDate: newexpirationdate,
+                });
+                
+                return fetch("/profile", {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                        "CSRF-Token": Cookies.get("XSRF-TOKEN"),
+                    },
+                    body: JSON.stringify({ firstName, lastName, newexpirationdate }),
+                })
+                .then(() => {
+                    window.location.assign("/dashboard");
+                });
+
+            } else {
+                alert("Please fill in the form");
+            }
+        });
+            
+});
+</script>

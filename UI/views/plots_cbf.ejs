@@ -1,0 +1,472 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>maybe</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/Features-Boxed.css">
+    <link rel="stylesheet" href="/assets/css/Login-notForm.css">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/highcharts.css">
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js" defer></script>
+</head>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- This script is responsible for the plot and it's data -->
+<script>
+    // Socket connection
+    const host = '<%= host %>'
+    var socketid;
+    var socket = io.connect('http://' + host)
+    socket.on('connect', () => {
+        socketid = socket.id
+        console.log(socket.id)
+    })
+    var data = []
+    // When you hear an cbf message
+    socket.on('cbf', (parsethis) => {
+        plotinfo = JSON.parse(parsethis)
+        console.log(plotinfo.new_data,plotinfo.text,plotinfo.description, plotinfo.datetime, plotinfo.interval)
+        graph(plotinfo.new_data,plotinfo.text,plotinfo.description, plotinfo.datetime, plotinfo.interval)
+    })
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+        graph([],"Choose From Selections", "", "2000-01-01", 15);
+    });
+
+    function graph (plot_data,text,description,datetime,resolution) {
+
+        var date = new Date(datetime)
+        var timestamp = date.getTime()
+        var interval = resolution*60*1000
+
+        Highcharts.chart('container', {
+            chart: {
+                type: 'spline',
+                scrollablePlotArea: {
+                    minWidth: 600,
+                    scrollPositionX: 1
+                }
+            },
+            title: {
+                text: text,
+                align: 'center'
+            },
+            subtitle: {
+                text: description,
+                align: 'center'
+            },
+            xAxis: {
+                type: 'datetime',
+                min: timestamp,
+                max: timestamp + 24*60*60*1000
+            },
+            yAxis: {
+                title: null,
+                minorGridLineWidth: 1,
+                gridLineWidth: 1,
+                alternateGridColor: null,
+            },
+            plotOptions: {
+                spline: {
+                    lineWidth: 4,
+                    states: {
+                        hover: {
+                            lineWidth: 5
+                        }
+                    },
+                    marker: {
+                        enabled: false
+                    },
+                    pointInterval: interval,
+                    pointStart: timestamp
+                }
+            },
+            series: [{
+                name: text,
+                data: plot_data,
+
+            },],
+            navigation: {
+                menuItemStyle: {
+                    fontSize: '10px'
+                }
+            }
+        });
+    }
+    
+</script>
+<body>
+    <section class="login-dark">
+        <% email %>
+        <%- include("navbar.ejs",{email: email}) %>
+
+        <div class="centered_only">
+            <div class="row">
+                <div class="col">
+                    <div class="left_of_plot">
+                        <div class="row "style="padding: 10px;">
+                            <div class="col" style=" width: 200px;">
+                                <div>
+                                    <p>Date from</p>
+                                    <input class="form-control" type="date" id="date" name="date" required></input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row "style="padding: 10px;">
+                            <div class="col">
+                                <div>
+                                    <% if (!cbf) { %><p>Country</p><% } else { %><p>Country from</p><% } %>
+                                    <select class="form-control" id="country_one" name="country_one" required>
+                                        <option>Option 1</option>
+                                        <option>Option 2</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <% if (cbf) { %>
+                        <div class="row "style="padding: 10px;">
+                            <div class="col">
+                                <div>
+                                    <p>Country to</p>
+                                    <select class="form-control" id="country_two" name="country_two" required>
+                                        <option>Option 1</option>
+                                        <option>Option 2</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+                        <% if (gpt) { %>
+                        <div class="row "style="padding: 10px;">
+                            <div class="col">
+                                <div>
+                                    <p>Generation Type</p>
+                                    <select class="form-control" id="generation_type" name="generation_type" required>
+                                        <option>Option 1</option>
+                                        <option>Option 2</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+                        <div class="row "style="padding: 10px;">
+                            <div class="col">
+                                <div>
+                                    <p>Interval</p>
+                                    <select class="form-control" id="interval" name="interval" required>
+                                        <option>15 minutes</option>
+                                        <option>30 minutes</option>
+                                        <option>60 minutes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="padding:10px">
+                            <div class="col"></div>
+                                <div class="col"></div>
+                                <div class="col">
+                                    <button class="btn btn-primary" type="submit" id="refresh_button" onclick="refreshbutton()">Refresh</button>
+                                </div>
+                        </div>
+                        <%- include("small_navbar.ejs",{cbf:cbf, gpt:gpt}) %>
+                    </div>
+            </div>
+                <div class="col">
+                    <div class="plot">
+                        <figure class="highcharts-figure" style="padding-top: 20px;">
+                            <div id="container"></div>
+                            
+                            <div class="row" style="padding: 10px 20px 0px 20px;">
+                                <div class="col" style="text-align: left;">
+                                    <p style="color: rgba(255, 255, 255, 0.652);font-size: 15px;">
+                                        <%= daysleft %> days left
+                                    </p>
+                                </div>
+                                <div class="col" style="text-align: right;"">
+                                    <a href=/profile style="color: rgba(255,255,255,0.652);font-size: 15px;">Extend</a>
+                                </div>
+                            </div>
+                        </figure>
+                    </div>
+                </div>
+            </div>
+        </div>>     
+    </section>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+<!-- All coutries with abbr -->
+<script id="countries_json" type="application/json">
+    [
+    {
+        "country": "Albania",
+        "abbreviation": "AL"
+    },
+    {
+        "country": "Armenia",
+        "abbreviation": "AM"
+    },
+    {
+        "country": "Austria",
+        "abbreviation": "AT"
+    },
+    {
+        "country": "Azerbaijan",
+        "abbreviation": "AZ"
+    },
+    {
+        "country": "Belarus",
+        "abbreviation": "BY"
+    },
+    {
+        "country": "Belgium",
+        "abbreviation": "BE"
+    },
+    {
+        "country": "Bosnia and Herzegovina",
+        "abbreviation": "BA"
+    },
+    {
+        "country": "Bulgaria",
+        "abbreviation": "BG"
+    },
+    {
+        "country": "Croatia",
+        "abbreviation": "HR"
+    },
+    {
+        "country": "Cyprus",
+        "abbreviation": "CY"
+    },
+    {
+        "country": "Czech Republic",
+        "abbreviation": "CZ"
+    },
+    {
+        "country": "Denmark",
+        "abbreviation": "DK"
+    },
+    {
+        "country": "Estonia",
+        "abbreviation": "EE"
+    },
+    {
+        "country": "Finland",
+        "abbreviation": "FI"
+    },
+    {
+        "country": "France",
+        "abbreviation": "FR"
+    },
+    {
+        "country": "Georgia",
+        "abbreviation": "GE"
+    },
+    {
+        "country": "Germany",
+        "abbreviation": "DE"
+    },
+    {
+        "country": "Greece",
+        "abbreviation": "GR"
+    },
+    {
+        "country": "Hungary",
+        "abbreviation": "HU"
+    },
+    {
+        "country": "Ireland",
+        "abbreviation": "IE"
+    },
+    {
+        "country": "Italy",
+        "abbreviation": "IT"
+    },
+    {
+        "country": "Kosovo",
+        "abbreviation": "XK"
+    },
+    {
+        "country": "Latvia",
+        "abbreviation": "LV"
+    },
+    {
+        "country": "Lithuania",
+        "abbreviation": "LT"
+    },
+    {
+        "country": "Luxembourg",
+        "abbreviation": "LU"
+    },
+    {
+        "country": "Malta",
+        "abbreviation": "MT"
+    },
+    {
+        "country": "Montenegro",
+        "abbreviation": "ME"
+    },
+    {
+        "country": "Netherlands",
+        "abbreviation": "NL"
+    },
+    {
+        "country": "North Macedonia",
+        "abbreviation": "MK"
+    },
+    {
+        "country": "Norway",
+        "abbreviation": "NO"
+    },
+    {
+        "country": "Poland",
+        "abbreviation": "PL"
+    },
+    {
+        "country": "Portugal",
+        "abbreviation": "PT"
+    },
+    {
+        "country": "Republic of Moldova",
+        "abbreviation": "MD"
+    },
+    {
+        "country": "Romania",
+        "abbreviation": "RO"
+    },
+    {
+        "country": "Russia",
+        "abbreviation": "RU"
+    },
+    {
+        "country": "Serbia",
+        "abbreviation": "RS"
+    },
+    {
+        "country": "Seychelles",
+        "abbreviation": "SC"
+    },
+    {
+        "country": "Sierra Leone",
+        "abbreviation": "SL"
+    },
+    {
+        "country": "Singapore",
+        "abbreviation": "SG"
+    },
+    {
+        "country": "Slovakia",
+        "abbreviation": "SK"
+    },
+    {
+        "country": "Slovenia",
+        "abbreviation": "SI"
+    },
+    {
+        "country": "Spain",
+        "abbreviation": "ES"
+    },
+    {
+        "country": "Sweden",
+        "abbreviation": "SE"
+    },
+    {
+        "country": "Switzerland",
+        "abbreviation": "CH"
+    },
+    {
+        "country": "Turkey",
+        "abbreviation": "TR"
+    },
+    {
+        "country": "Ukraine",
+        "abbreviation": "UA"
+    },
+    {
+        "country": "United Kingdom",
+        "abbreviation": "UK"
+    }
+]
+</script>
+
+<!-- Generation types -->
+<script id="generationtype_json" type="application/json">
+    [
+    {"type": "Biomass" },
+    {"type":    "Fossil Brown coal/Lignite" },
+    {"type":    "Fossil Coal-derived gas" },
+    {"type":    "Fossil Gas" },
+    {"type":    "Fossil Hard coal" },
+    {"type":    "Fossil Oil" },
+    {"type":    "Fossil Oil shale" },
+    {"type":    "Fossil Peat" },
+    {"type":    "Geothermal" },
+    {"type":    "Hydro Pumped Storage" },
+    {"type":    "Hydro Run-of-river and poundage" },
+    {"type":    "Hydro Water Reservoir" },
+    {"type":   "Marine" },
+    {"type":    "Nuclear" },
+    {"type":    "Other" },
+    {"type":    "Other renewable" },
+    {"type":    "Solar" },
+    {"type":    "Waste" },
+    {"type":    "Wind Offshore" },
+    {"type":    "Wind Onshore" }
+    ]
+</script>
+
+<!-- Fill the selections -->
+<script>
+    let dropdown_one= $('#country_one');
+    let dropdown_two= $('#country_two');
+    let dropdown_three= $('#generation_type');
+
+    dropdown_one.empty();
+    dropdown_two.empty();
+    dropdown_three.empty();
+
+    dropdown_one.append('<option selected="true" disabled></option>');
+    dropdown_two.append('<option selected="true" disabled></option>');
+    dropdown_three.append('<option selected="true" disabled></option>');
+
+    dropdown_one.prop('selectedIndex', 0);
+    dropdown_two.prop('selectedIndex', 0);
+    dropdown_three.prop('selectedIndex', 0);
+
+    var countries = JSON.parse($('#countries_json').html());
+    var generationtype = JSON.parse($('#generationtype_json').html());
+
+    for (var i = 0; i < countries.length; i++) {
+        dropdown_one.append($('<option></option>').attr('value', countries[i].country).text(countries[i].country));
+        dropdown_two.append($('<option></option>').attr('value', countries[i].country).text(countries[i].country));
+    };
+
+    for (var i = 0; i < generationtype.length; i++) {
+        dropdown_three.append($('<option></option>').attr('value', generationtype[i].type).text(generationtype[i].type));
+    };
+
+    function refreshbutton () {
+        var date = $("#date").val();
+        var country_one = $("#country_one").val();
+        var country_two = $("#country_two").val();
+        var interval = $("#interval").val();
+        return fetch("/cbf", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "CSRF-Token": Cookies.get("XSRF-TOKEN"),
+            },
+            body: JSON.stringify({ datetime:date, country_in: country_one , country_out: country_two, interval: interval, socketid: socketid}),
+        });
+    }
+</script>

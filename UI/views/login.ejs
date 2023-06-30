@@ -1,0 +1,123 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>maybe</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/Features-Boxed.css">
+    <link rel="stylesheet" href="/assets/css/Login-Form-Dark.css">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <!-- <script src="https://www.gstatic.com/firebasejs/9.6.9/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.9/firebase-auth.js" defer></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js" defer></script>
+</head>
+
+<body>
+    <section class="login-dark">    
+        <div class="centered" style="padding-bottom: 40px;">
+            <div class="illustration">
+                <img src="./assets/img/turbines.png" style="width:23vh;height:23vh;padding:3vh;">
+                <h1 style="color: rgb(255,255,255);">EnergyLive 2022</h1>
+            </div>
+            <button class="btn btn-primary d-block w-100" id="googleBtn">Sign in with Google
+            </button>
+        </div>        
+    </section>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+<!-- Script for google authentication and cookies -->
+<script type="module">
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/9.6.9/firebase-app.js";
+
+    import {
+        getAuth,
+        signOut,
+        GoogleAuthProvider,
+        getRedirectResult,
+        signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/9.6.9/firebase-auth.js";
+
+    import { getFirestore, updateDoc, getDoc, doc, Timestamp, setDoc } from "https://www.gstatic.com/firebasejs/9.6.9/firebase-firestore.js";
+
+    window.addEventListener("DOMContentLoaded", () => {
+        const firebaseConfig = {
+        apiKey: "",
+        authDomain: "",
+        projectId: "",
+        storageBucket: "",
+        messagingSenderId: "",
+        appId: ""
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        //When button is pressed Sign in with Pop Up and...
+        document
+        .getElementById("googleBtn")
+        .addEventListener("click", (e) => {
+            //Provider and auth for PopUp
+            const provider = new GoogleAuthProvider(app);
+            const auth = getAuth(app);
+
+            signInWithPopup(auth, provider)
+            .then(async ({ user }) => {
+                //Initial values for user data
+                var data = user.reloadUserInfo;
+                var displayName = data.displayName;
+                var email = data.email;
+                var lastlogin = data.lastLoginAt;
+                var userid = data.localId;
+                var firstName = "";
+                var lastName = "";
+                const currentDate = new Date();
+                var expirationDate = currentDate.getTime();
+
+                //If user hasn't logged in before (Does not exist in Database) add neccessary collection in firestore else get/check some data.
+                const usersRef = doc(db, 'users', userid);
+                const docSnap = await getDoc(usersRef);
+
+                if (docSnap.exists()) {
+                    // Get user data from database
+                    const data = docSnap.data();
+                    expirationDate = data.expirationDate;
+                    firstName = data.firstName;
+                    lastName = data.lastName;
+                    await updateDoc(usersRef , {
+                        displayName: displayName,
+                        lastlogin: lastlogin,
+                    });
+                } else {
+                    const docData = {
+                        lastlogin: lastlogin,
+                        email: email,
+                        displayName: displayName,
+                        firstName: "",
+                        lastName: "",
+                        expirationDate: expirationDate,
+                    };
+                    await setDoc(doc(db, "users", userid), docData);
+                }
+                // ... create a cookie and save some neccessary data
+                return user.getIdToken().then((idToken) => {
+                    return fetch("/sessionLogin", {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                            "CSRF-Token": Cookies.get("XSRF-TOKEN"),
+                        },
+                        body: JSON.stringify({ idToken, email, lastlogin, displayName, firstName, lastName, expirationDate, userid }),
+                    });
+                });
+
+            }).then(() => {
+                return signOut(auth);
+            }).then(() => {
+                window.location.assign("/dashboard");
+            });
+            return false;
+        });
+});
+</script>

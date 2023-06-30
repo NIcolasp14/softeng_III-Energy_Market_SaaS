@@ -1,0 +1,29 @@
+-------------------------------------------------------------------------------------------------
+                                            HEROKU HOW TO                                        
+-------------------------------------------------------------------------------------------------
+// check if you are in the deploy branch
+git checkout deploy
+
+// login, create
+heroku login
+heroku create
+
+// change to git of heroku app
+heroku git:remote -a APPNAME
+
+// push only the folder of the app that we want
+git subtree push --prefix [Only one at a time i.e. saas-77-mvc] heroku main
+git subtree push --prefix saas-77-mvc heroku main
+
+// create database
+heroku addons:create heroku-postgresql:hobby-dev
+
+// connect to database an create all schemas needed
+heroku pg:psql --app APPNAME DBNAME
+	CREATE SCHEMA saas_77_mvc;
+
+# USEFUL COMMANDS #
+
+Reset App      -->   heroku repo:reset --app APPNAME
+See logs       -->   heroku logs --tail
+Restart server -->   heroku ps:restart

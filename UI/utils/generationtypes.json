@@ -1,0 +1,22 @@
+[
+    {"type": "Biomass" },
+    {"type":    "Fossil Brown coal/Lignite" },
+    {"type":    "Fossil Coal-derived gas" },
+    {"type":    "Fossil Gas" },
+    {"type":    "Fossil Hard coal" },
+    {"type":    "Fossil Oil" },
+    {"type":    "Fossil Oil shale" },
+    {"type":    "Fossil Peat" },
+    {"type":    "Geothermal" },
+    {"type":    "Hydro Pumped Storage" },
+    {"type":    "Hydro Run-of-river and poundage" },
+    {"type":    "Hydro Water Reservoir" },
+    {"type":   "Marine" },
+    {"type":    "Nuclear" },
+    {"type":    "Other" },
+    {"type":    "Other renewable" },
+    {"type":    "Solar" },
+    {"type":    "Waste" },
+    {"type":    "Wind Offshore" },
+    {"type":    "Wind Onshore" }
+]

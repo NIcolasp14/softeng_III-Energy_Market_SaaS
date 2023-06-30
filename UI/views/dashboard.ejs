@@ -1,0 +1,43 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>maybe</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/Features-Boxed.css">
+    <link rel="stylesheet" href="/assets/css/Login-Form-Dark.css">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+
+<body>
+    <section class="login-dark">
+        <% email %>
+        <%- include("navbar.ejs",{email: email}) %>
+        <div class="centered">
+            <div class="illustration">
+                <div>
+                    <img src="./assets/img/turbines.png" style="width:15vh;height:15vh;padding:3vh;">
+                </div>
+                
+            </div>
+            <div class="row">
+                <%- include("card.ejs", {header: "Actual Total Load", description: "Chart showing the ATL of a country for some date.",link: "/atl"}) %>
+                <%- include("card.ejs", {header: "Generation Per Type", description: "Chart showing the GPT of a country for some date.",link: "/gpt"}) %>
+                <%- include("card.ejs", {header: "Cross Border Flows", description: "Chart showing the CBF  between two countries for some date.",link: "/cbf"}) %>
+            </div>
+            <div class="row" style="padding: 10px 20px 0px 20px;">
+                <div class="col" style="text-align: left;">
+                    <p style="color: rgba(255, 255, 255, 0.652);font-size: 15px;">
+                        <%= daysleft %> days left 
+                        <% if (expired) { %>(Expired) <% } %>
+                    </p>
+                </div>
+                <div class="col" style="text-align: right;"">
+                    <a href=/profile style="color: rgba(255,255,255,0.652);font-size: 15px;">Extend</a>
+                </div>
+            </div>
+        </div>     
+    </section>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+

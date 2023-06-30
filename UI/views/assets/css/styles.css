@@ -1,0 +1,18 @@
+.scroll {
+   height: 400px;
+   overflow: auto;
+}
+.scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.scroll::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 100px rgb(250,250,250); 
+    border-radius: 30px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+    border-radius: 30px;
+    -webkit-box-shadow: inset 0 0 100px rgb(30,40,51); 
+}
+

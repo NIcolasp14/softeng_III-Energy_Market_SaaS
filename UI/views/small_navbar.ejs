@@ -1,0 +1,43 @@
+<% if (!gpt && !cbf) { %>
+<ul class="navbar-nav ms-auto">
+    <div class="row">
+        <div class="col" style="text-align: center;border-bottom: solid;border-color: rgb(0, 123, 255)">
+            <li class="nav-item"><a class="nav-link" href="/gpt" style="color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);;">GPT</a></li>
+        </div>
+        <div class="col" style="text-align: center;background-color: rgb(0, 123, 255);">
+            <li class="nav-item"><a class="nav-link active" href="/atl" style="pointer-events: none; cursor: default;color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">ATL</a></li>
+        </div>
+        <div class="col" style="text-align: center;border-bottom: solid;border-color: rgb(0, 123, 255)">
+            <li class="nav-item"><a class="nav-link active" href="/cbf" style="color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">CBF</a></li>
+        </div>
+    </div>
+</ul>
+<% } else if (gpt) { %>
+<ul class="navbar-nav ms-auto">
+    <div class="row">
+        <div class="col" style="text-align: center;background-color: rgb(0, 123, 255);">
+            <li class="nav-item"><a class="nav-link" href="/gpt" style="pointer-events: none; cursor: default;color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">GPT</a></li>
+        </div>
+        <div class="col" style="text-align: center;border-bottom: solid;border-color: rgb(0, 123, 255)">
+            <li class="nav-item"><a class="nav-link active" href="/atl" style="color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">ATL</a></li>
+        </div>
+        <div class="col" style="text-align: center;border-bottom: solid;border-color: rgb(0, 123, 255)">
+            <li class="nav-item"><a class="nav-link active" href="/cbf" style="color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">CBF</a></li>
+        </div>
+    </div>
+</ul>
+<% } else { %>
+    <ul class="navbar-nav ms-auto">
+        <div class="row">
+            <div class="col" style="text-align: center;border-bottom: solid;border-color: rgb(0, 123, 255)">
+                <li class="nav-item"><a class="nav-link" href="/gpt" style="color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">GPT</a></li>
+            </div>
+            <div class="col" style="text-align: center;border-bottom: solid;border-color: rgb(0, 123, 255)">
+                <li class="nav-item"><a class="nav-link active" href="/atl" style="color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">ATL</a></li>
+            </div>
+            <div class="col" style="text-align: center;background-color: rgb(0, 123, 255);">
+                <li class="nav-item"><a class="nav-link active" href="/cbf" style="pointer-events: none; cursor: default;color: rgba(255,255,255,0.9);font-size: min(15px, 3vh);">CBF</a></li>
+            </div>
+        </div>
+    </ul>
+<% } %>
