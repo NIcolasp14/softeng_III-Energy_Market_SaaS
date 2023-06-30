@@ -1,0 +1,10 @@
+{
+    brokers: ['<BROKER>:9092'],
+    connectionTimeout: 3000,
+    ssl: true,
+    sasl: {
+      mechanism: 'plain',
+      username: config.KAFKA_USERNAME,
+      password: config.KAFKA_PASSWORD,
+    },
+}
